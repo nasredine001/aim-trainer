@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / tooling
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local game data (personal bests)
+data/
+
+# Build artefacts
+build/
+dist/
+*.egg-info/
