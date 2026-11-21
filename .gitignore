@@ -21,3 +21,4 @@ data/
 build/
 dist/
 *.egg-info/
+*.spec
