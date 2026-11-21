@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from aimtrainer.stats import RunStats, StatsStore
+from aimtrainer.stats import RunStats, StatsStore, default_stats_path
 
 
 class RunStatsTests(unittest.TestCase):
@@ -34,6 +36,42 @@ class RunStatsTests(unittest.TestCase):
         stats.reaction_times = [0.30, 0.20, 0.40]
         self.assertAlmostEqual(stats.avg_reaction_ms, 300.0)
         self.assertAlmostEqual(stats.best_reaction_ms, 200.0)
+
+
+class DefaultPathTests(unittest.TestCase):
+    def test_source_path_uses_project_data_folder(self):
+        had_frozen = hasattr(sys, "frozen")
+        old_frozen = getattr(sys, "frozen", None)
+        try:
+            if had_frozen:
+                del sys.frozen
+            expected = Path(__file__).resolve().parent.parent / "data" / "stats.json"
+            self.assertEqual(default_stats_path(), expected)
+        finally:
+            if had_frozen:
+                sys.frozen = old_frozen
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows-specific path")
+    def test_frozen_path_uses_appdata(self):
+        had_frozen = hasattr(sys, "frozen")
+        old_frozen = getattr(sys, "frozen", None)
+        old_appdata = os.environ.get("APPDATA")
+        try:
+            sys.frozen = True
+            os.environ["APPDATA"] = r"C:\Users\test\AppData\Roaming"
+            expected = (
+                Path(r"C:\Users\test\AppData\Roaming") / "AimTrainer" / "stats.json"
+            )
+            self.assertEqual(default_stats_path(), expected)
+        finally:
+            if had_frozen:
+                sys.frozen = old_frozen
+            else:
+                del sys.frozen
+            if old_appdata is None:
+                os.environ.pop("APPDATA", None)
+            else:
+                os.environ["APPDATA"] = old_appdata
 
 
 class StatsStoreTests(unittest.TestCase):

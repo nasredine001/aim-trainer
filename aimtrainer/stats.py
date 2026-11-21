@@ -3,13 +3,30 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 
+def user_data_dir() -> Path:
+    """Return the per-user folder used by the packaged executable."""
+    if sys.platform == "win32":
+        root = os.environ.get("APPDATA")
+        base = Path(root) if root else Path.home() / "AppData" / "Roaming"
+        return base / "AimTrainer"
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "AimTrainer"
+    root = os.environ.get("XDG_DATA_HOME")
+    base = Path(root) if root else Path.home() / ".local" / "share"
+    return base / "aim-trainer"
+
+
 def default_stats_path() -> Path:
+    if getattr(sys, "frozen", False):
+        return user_data_dir() / "stats.json"
     return Path(__file__).resolve().parent.parent / "data" / "stats.json"
 
 
